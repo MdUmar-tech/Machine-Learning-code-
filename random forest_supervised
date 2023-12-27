@@ -1,0 +1,50 @@
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn import metrics
+import matplotlib.pyplot as plt
+
+# Load the data
+df = pd.read_csv('sample.csv')
+
+# Separate features and target
+Target = df.iloc[:, -1]
+Features = df.iloc[:, :-1]
+
+# Label encoding for the target variable
+LE = LabelEncoder()
+Target_bin = LE.transform(Target)
+
+# Feature scaling
+scaler = StandardScaler().fit(Features.values)
+features_scale = scaler.transform(Features.values)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(features_scale, Target_bin, test_size=0.3, stratify=Target_bin)
+
+# Create a Random Forest Classifier
+clf = RandomForestClassifier(n_estimators=500, max_depth=15, min_samples_leaf=1)
+clf.fit(X_train, y_train)
+
+# Make predictions
+y_pred = clf.predict(X_test)
+y_pred_train = clf.predict(X_train)
+
+# Evaluate model performance
+print("Accuracy on training set:", metrics.accuracy_score(clf, y_train))
+print("Accuracy on testing set:", metrics.accuracy_score(clf, y_test))
+
+# Calculate ROC AUC scores
+print("ROC AUC score on training set:", metrics.roc_auc_score(clf, y_train))
+print("ROC AUC score on testing set:", metrics.roc_auc_score(clf, y_test))
+
+# Visualize feature importances
+features = Features.shape[1]
+plt.figure(figsize=(8, 15))
+plt.barh(range(features), clf.feature_importances_, align='center')
+plt.yticks(np.arange(features), Features.columns)
+plt.xlabel('Feature Importance')
+plt.ylabel('Feature')
+plt.show()
