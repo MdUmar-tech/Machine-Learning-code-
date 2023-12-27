@@ -1,0 +1,70 @@
+#nybermann
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import ConfusionMatrixDisplay, classification_report, accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import MinMaxScaler
+
+
+#import dataset
+df=pd.read_csv("_.csv")
+
+
+#perform exploratory dataanalysys
+df.head()
+df.shape()
+df.columns()
+df.describe()
+df.info()
+df['drug'].unique()
+
+# 4. Check for the frequency of each drug class compounds.
+sns.countplot(x=df['Drug'])
+plt.title('Class Balance');
+
+# 5. Define the feature and target set
+X = df.drop(columns='Drug')
+y = df['Drug']
+
+# 6. Convert text values into numeric form
+X = pd.get_dummies(X, dtype=float, drop_first=True)
+
+# 7. Split the training set into train and test set
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,
+random_state=42)  
+
+
+print("X_train shape:", X_train.shape)
+
+print("y_train shape:", y_train.shape)
+
+print("X_test shape:", X_test.shape)
+
+print("y_test shape:", y_test.shape)
+
+# 8. Make logistic regression model and print the accuracies
+Logistic_model = LogisticRegression(max_iter=2000)
+
+Logistic_model.fit(X_train, y_train)
+
+Accuracy_train = Logistic_model.score(X_train, y_train)
+Accuracy_test = Logistic_model.score(X_test, y_test)
+
+print("Accuracy_train:", Accuracy_train)
+print("Accuracy_test:", Accuracy_test)
+
+#9. Compute Importance of the features
+features = X_test.columns
+importances = Logistic_model.coef_[0]
+feat_imp = pd.Series(importances, index=features).sort_value()
+feat_imp.tail().plot(kind= 'barh')
+plt.xlabel("Gini Importance")
+plt.ylabel("Feature")
+plt.title("Feature Importance");
